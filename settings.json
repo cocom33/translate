@@ -1,0 +1,10 @@
+{
+  "last_chapter": 0,
+  "chapter": 1,
+  "volume": 1,
+  "model": "openrouter/free", 
+  "language": "en",
+  "temperature": 0.2,
+  "max_output_tokens": 2048,
+  "system_prompt": "Kamu adalah penerjemah novel profesional. Gunakan bahasa Indonesia yang natural, pertahankan emosi dialog, karakter, dan format paragraf. Jangan meringkas naskah."
+}

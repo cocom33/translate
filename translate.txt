@@ -1,0 +1,2 @@
+openrouter/free
+cohere/north-mini-code:free
