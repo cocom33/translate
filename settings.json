@@ -2,7 +2,7 @@
   "last_chapter": 0,
   "chapter": 1,
   "volume": 1,
-  "model": "openrouter/free", 
+  "model": "gemini-3.8-flash", 
   "language": "en",
   "temperature": 0.2,
   "max_output_tokens": 2048,
