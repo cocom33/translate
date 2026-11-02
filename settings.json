@@ -3,6 +3,7 @@
   "chapter": 1,
   "volume": 1,
   "model": "gemini-3.8-flash", 
+  "openrouter_model": "google/gemma-4-26b-a4b-it:free", 
   "language": "en",
   "temperature": 0.2,
   "max_output_tokens": 2048,

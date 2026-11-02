@@ -69,9 +69,9 @@ args = parser.parse_args()
 with SETTINGS_PATH.open("r", encoding="utf-8") as f:
     settings = json.load(f)
     
-VOLUME = int(settings.get("volume", 4))
-start_chapter = int(settings.get("chapter", 1))
 model = settings.get("model", DEFAULT_MODEL)
+openrouter_model = settings.get("openrouter_model", DEFAULT_MODEL)
+
 source_language = args.l if args.l is not None else settings.get("language", "en").lower()
 temperature = float(settings.get("temperature", 0.2))
 max_output_tokens = int(settings.get("max_output_tokens", 8192))
@@ -137,18 +137,18 @@ if not api_key:
         "GEMINI_API_KEY belum diatur di environment variable."
     )
 
-client = genai.Client(api_key=os.getenv("GEMINI2_API_KEY"))
-# client = OpenAI(
-#     base_url="https://openrouter.ai/api/v1",
-#     api_key=os.getenv("OPENROUTER_API_KEY"),
-# )
+# client = genai.Client(api_key=os.getenv("GEMINI2_API_KEY"))
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
 
 
 # =========================
 # TRANSLATION
 # =========================
 
-def translate_text(title, pt, text):
+def translate_text2(title, pt, text):
     """Kirim satu naskah ke Gemini dan kembalikan hasil JSON."""
 
     global source_language
@@ -229,7 +229,7 @@ baris yang ada pada naskah sejauh memungkinkan.
 
 
 
-def translate_text2(title, pt, text):
+def translate_text(title, pt, text):
     """Kirim satu naskah ke Gemini dan kembalikan hasil JSON."""
     
     global source_language
@@ -263,7 +263,7 @@ baris yang ada pada naskah sejauh memungkinkan.
     for attempt in range(1, 4):
         try:
             response = client.chat.completions.create(
-                model=model,
+                model=openrouter_model,
                 messages=[
                     {
                         "role": "system",
@@ -382,7 +382,7 @@ def do_translate(title, pt, text):
     save_texts_to_file(title, pt, result)
 
 def main():
-    global start_chapter, settings
+    global settings
     naskah = """"""
     
     print(f"Source language: {LANGUAGES[source_language]}")
@@ -409,8 +409,6 @@ def main():
             
                         if total >= max_chars:
                             # do_translate(filename, pt, naskah)
-                            # settings.update({"chapter": start_chapter + 1})
-                            # settings.update({"last_chapter": start_chapter})
                             # with SETTINGS_PATH.open("w", encoding="utf-8") as f:
                             # json.dump(settings, f, ensure_ascii=False, indent=2)
                             if source_language == "ja" and line[-2] in end_jpn:
