@@ -137,18 +137,19 @@ if not api_key:
         "GEMINI_API_KEY belum diatur di environment variable."
     )
 
-# client = genai.Client(api_key=os.getenv("GEMINI2_API_KEY"))
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-)
+client = genai.Client(api_key=os.getenv("GEMINI2_API_KEY"))
+#client = OpenAI(
+#    base_url="https://openrouter.ai/api/v1",
+#    api_key=os.getenv("OPENROUTER_API_KEY"),
+#)
 
 
 # =========================
 # TRANSLATION
 # =========================
 
-def translate_text2(title, pt, text):
+# google ai studio
+def translate_text(title, pt, text):
     """Kirim satu naskah ke Gemini dan kembalikan hasil JSON."""
 
     global source_language
@@ -179,7 +180,7 @@ baris yang ada pada naskah sejauh memungkinkan.
 </NASKAH>
 """
 
-    for attempt in range(1, 4):
+    for attempt in range(1, 3):
         try:
             response = client.models.generate_content(
                 model=model,
@@ -219,17 +220,19 @@ baris yang ada pada naskah sejauh memungkinkan.
         except Exception as exc:
             print(
                 f"{title} pt {pt}: request gagal "
-                f"(percobaan {attempt}/3): {exc}"
+                f"(percobaan {attempt}/2): {exc}"
             )
 
-            if attempt == 3:
+            if attempt == 2:
                 raise
 
             time.sleep(attempt * 3)
 
 
 
-def translate_text(title, pt, text):
+
+# open router
+def translate_text2(title, pt, text):
     """Kirim satu naskah ke Gemini dan kembalikan hasil JSON."""
     
     global source_language
@@ -417,12 +420,14 @@ def main():
                                 naskah = """"""
                                 total = 0
                                 pt += 1 
+                                time.sleep(60)
                             elif source_language == "en" and line[-2] in end_eng:
                                 print(f"\nReached max_input_chars ({total}). translating.")
                                 do_translate(filename, pt, naskah)
                                 naskah = """"""
                                 total = 0
                                 pt += 1
+                                time.sleep(60)
                                 
                     print(f"\nReached max_input_chars ({total}). translating.")
                     do_translate(filename, pt, naskah)
