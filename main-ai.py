@@ -9,14 +9,11 @@ from google import genai
 from google.genai import types
 from openai import OpenAI
 
-
 # =========================
 # CONFIGURATION
 # =========================
 
 load_dotenv()
-INPUT_PATH = Path("input.txt")
-INPUT_PATH2 = Path("input2.txt")
 FOLDER_PATH = Path("input")
 OUTPUT_DIR = Path("output")
 SETTINGS_PATH = Path("settings.json")
@@ -62,9 +59,29 @@ RESPONSE_SCHEMA = {
 # LOAD SETTINGS
 # =========================
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-l", default="en", required=False)
-args = parser.parse_args()
+while True:
+    print("\n===== source language =====")
+    print("1. English")
+    print("2. Japanese")
+    print("3. Korean")
+
+    pilihan = input("insert 1/2/3: ")
+
+    if pilihan == "1":
+        source_language = "en"
+        break
+
+    elif pilihan == "2":
+        source_language = "ja"
+        break
+
+    elif pilihan == "3":
+        source_language = "ko"
+        break
+
+    else:
+        print("invalid choice, please try again.")
+
 
 with SETTINGS_PATH.open("r", encoding="utf-8") as f:
     settings = json.load(f)
@@ -72,7 +89,7 @@ with SETTINGS_PATH.open("r", encoding="utf-8") as f:
 model = settings.get("model", DEFAULT_MODEL)
 openrouter_model = settings.get("openrouter_model", DEFAULT_MODEL)
 
-source_language = args.l if args.l is not None else settings.get("language", "en").lower()
+# source_language = settings.get("language", "en").lower()
 temperature = float(settings.get("temperature", 0.2))
 max_output_tokens = int(settings.get("max_output_tokens", 8192))
 system_prompt = settings.get("system_prompt", DEFAULT_SYSTEM_PROMPT)
@@ -80,6 +97,7 @@ system_prompt = settings.get("system_prompt", DEFAULT_SYSTEM_PROMPT)
 LANGUAGES = {
     "en": "Inggris",
     "ja": "Jepang",
+    "ko": "Korean",
     "id": "Indonesia"
 }
 
@@ -227,8 +245,6 @@ baris yang ada pada naskah sejauh memungkinkan.
                 raise
 
             time.sleep(attempt * 3)
-
-
 
 
 # open router
@@ -381,8 +397,11 @@ def save_texts_to_file(title, pt, result):
 
 def do_translate(title, pt, text):
     print(f"\nTranslating {title} pt {pt}...")
-    result = translate_text(title, pt, text)
+    result = translate_gratis(title, pt, text)
+    # result = translate_text(title, pt, text)
     save_texts_to_file(title, pt, result)
+    
+    time.sleep(5)  # Delay to avoid rate limits or server overload
 
 def main():
     global settings
@@ -392,7 +411,7 @@ def main():
     
     end_eng = ["\"", ".", "”"]
     end_jpn = ["︒", "。", "」", "﹂", ".", "…", "？"] # , "─", "﹄", "』"
-    max_chars = 2000 if source_language == "ja" else 5500
+    max_chars = 2000 if source_language == "ja" else 3500
 
     for filename in os.listdir(FOLDER_PATH):
         if filename.endswith(".txt"):
@@ -400,40 +419,39 @@ def main():
     
             with open(txt_path, "r", encoding="utf-8") as file:
                 pt = 1
-                with INPUT_PATH2.open("r", encoding="utf-8-sig") as file:
-                    total = 0 
-                    for line in file:
-                        if len(line) < 2:
-                            continue
+                # with filename.open("r", encoding="utf-8-sig") as file:
+                total = 0 
+                for line in file:
+                    if len(line) < 2:
+                        continue
+                        
+                    # new
+                    total += len(line)
+                    naskah += line
+        
+                    if total >= max_chars:
+                        # do_translate(filename, pt, naskah)
+                        # with SETTINGS_PATH.open("w", encoding="utf-8") as f:
+                        # json.dump(settings, f, ensure_ascii=False, indent=2)
+                        if source_language == "ja" and line[-2] in end_jpn:
+                            print(f"\nReached max_input_chars ({total}). translating.")
+                            do_translate(filename, pt, naskah)
+                            naskah = """"""
+                            total = 0
+                            pt += 1 
                             
-                        # new
-                        total += len(line)
-                        naskah += line
-            
-                        if total >= max_chars:
-                            # do_translate(filename, pt, naskah)
-                            # with SETTINGS_PATH.open("w", encoding="utf-8") as f:
-                            # json.dump(settings, f, ensure_ascii=False, indent=2)
-                            if source_language == "ja" and line[-2] in end_jpn:
-                                print(f"\nReached max_input_chars ({total}). translating.")
-                                do_translate(filename, pt, naskah)
-                                naskah = """"""
-                                total = 0
-                                pt += 1 
-                                time.sleep(60)
-                            elif source_language == "en" and line[-2] in end_eng:
-                                print(f"\nReached max_input_chars ({total}). translating.")
-                                do_translate(filename, pt, naskah)
-                                naskah = """"""
-                                total = 0
-                                pt += 1
-                                time.sleep(60)
-                                
-                    print(f"\nReached max_input_chars ({total}). translating.")
-                    do_translate(filename, pt, naskah)
-                    naskah = """"""
-                    total = 0
-                    pt += 1 
+                        elif source_language == "en" and line[-2] in end_eng:
+                            print(f"\nReached max_input_chars ({total}). translating.")
+                            do_translate(filename, pt, naskah)
+                            naskah = """"""
+                            total = 0
+                            pt += 1
+                            
+                print(f"\nReached max_input_chars ({total}). translating.")
+                do_translate(filename, pt, naskah)
+                naskah = """"""
+                total = 0
+                pt += 1 
             
     
             print(f"Nama file: {filename}")
